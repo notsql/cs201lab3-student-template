@@ -130,7 +130,7 @@ public class Q1Test {
             return isMiddle(
                 split2,
                 split3,
-                String.format(format, "Postorder", "Preorder", "Inorder")
+                String.format(format, "Inorder", "Postorder", "Preorder")
             );
         }
 

@@ -65,15 +65,51 @@ public class Q1Test {
         System.out.println();
     }
 
-    static boolean firstEqualsLast(String[] split1, String[] split2) {
-        return split1[0].equals(split2[split2.length - 1]);
+    // checks that pre[ps..ps+len), in[is..is+len), post[qs..qs+len)
+    // describe the same binary tree
+    static boolean matches(
+        String[] pre, int ps,
+        String[] in, int is,
+        String[] post, int qs,
+        int len
+    ) {
+        if (len == 0) {
+            return true;
+        }
+        String root = pre[ps];
+        if (!post[qs + len - 1].equals(root)) {
+            return false;
+        }
+        int rootIdx = -1;
+        for (int i = is; i < is + len; i++) {
+            if (in[i].equals(root)) {
+                rootIdx = i;
+                break;
+            }
+        }
+        if (rootIdx == -1) {
+            return false;
+        }
+        int leftLen = rootIdx - is;
+        int rightLen = len - 1 - leftLen;
+        return (
+            matches(pre, ps + 1, in, is, post, qs, leftLen) &&
+            matches(pre, ps + 1 + leftLen, in, rootIdx + 1, post, qs + leftLen, rightLen)
+        );
     }
 
-    static String isMiddle(String[] split1, String[] split2, String result) {
-        if (firstEqualsLast(split1, split2)) {
-            return "Invalid traversals";
+    // inorder traversal of a binary search tree is in ascending order
+    static boolean isAscending(String[] values) {
+        for (int i = 1; i < values.length; i++) {
+            if (Integer.parseInt(values[i - 1]) >= Integer.parseInt(values[i])) {
+                return false;
+            }
         }
-        return result;
+        return true;
+    }
+
+    static boolean isValid(String[] pre, String[] in, String[] post) {
+        return isAscending(in) && matches(pre, 0, in, 0, post, 0, in.length);
     }
 
     // write your codes here
@@ -86,52 +122,24 @@ public class Q1Test {
         String[] split2 = traversal2.split("-");
         String[] split3 = traversal3.split("-");
 
-        if (
-            split1.length != split2.length ||
-            split2.length != split3.length ||
-            split1.length != split3.length
-        ) {
+        if (split1.length != split2.length || split2.length != split3.length) {
             return "Invalid traversals";
         }
 
         String format = "Traversal 1 - %s, Traversal 2 - %s, Traversal 3 - %s";
 
-        if (firstEqualsLast(split1, split2)) {
-            return isMiddle(
-                split2,
-                split1,
-                String.format(format, "Preorder", "Postorder", "Inorder")
-            );
-        } else if (firstEqualsLast(split1, split3)) {
-            return isMiddle(
-                split3,
-                split1,
-                String.format(format, "Preorder", "Inorder", "Postorder")
-            );
-        } else if (firstEqualsLast(split2, split1)) {
-            return isMiddle(
-                split1,
-                split2,
-                String.format(format, "Postorder", "Preorder", "Inorder")
-            );
-        } else if (firstEqualsLast(split2, split3)) {
-            return isMiddle(
-                split3,
-                split2,
-                String.format(format, "Inorder", "Preorder", "Postorder")
-            );
-        } else if (firstEqualsLast(split3, split1)) {
-            return isMiddle(
-                split1,
-                split3,
-                String.format(format, "Postorder", "Inorder", "Preorder")
-            );
-        } else if (firstEqualsLast(split3, split2)) {
-            return isMiddle(
-                split2,
-                split3,
-                String.format(format, "Inorder", "Postorder", "Preorder")
-            );
+        if (isValid(split1, split2, split3)) {
+            return String.format(format, "Preorder", "Inorder", "Postorder");
+        } else if (isValid(split1, split3, split2)) {
+            return String.format(format, "Preorder", "Postorder", "Inorder");
+        } else if (isValid(split2, split1, split3)) {
+            return String.format(format, "Inorder", "Preorder", "Postorder");
+        } else if (isValid(split2, split3, split1)) {
+            return String.format(format, "Postorder", "Preorder", "Inorder");
+        } else if (isValid(split3, split1, split2)) {
+            return String.format(format, "Inorder", "Postorder", "Preorder");
+        } else if (isValid(split3, split2, split1)) {
+            return String.format(format, "Postorder", "Inorder", "Preorder");
         }
 
         return "Invalid traversals";
